@@ -5548,11 +5548,14 @@ function jogarJogoForcaFutebol() {
 	function exibirEstadoJogo() {	
 		console.log("exibirEstadoJogo() chamada."); // Debug
         scoreDisplay.style.display = 'none';
+        palavrasUsadasListaElement.style.display = 'none';
 	
 		if ( palavrasUsadasText.length > 1 ) {
+            palavrasUsadasListaElement.style.display = 'flex';
 			const palavrasUsadasTextCapitalized = palavrasUsadasText.map(word => capitalizeFirstLetterOfEachWord(word));
 			const palavrasUsadasAnteriores = palavrasUsadasTextCapitalized.slice( 0, palavrasUsadasTextCapitalized.length -1);
 			palavrasUsadasListaElement.textContent = `👀 Palavras que já foram: ${palavrasUsadasAnteriores.join(", ")}`;
+
 		}
 	
 		// --- Atualizar elementos HTML com informações do jogo ---
