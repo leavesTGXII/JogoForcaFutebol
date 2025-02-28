@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jogo da Forca - Futebol</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="layout.css"> </head>
+<body>
+    <div id="game-container">
+        <h1><p id="numero-round"></p></h1>
+        <div id="menu-inicial">
+            <h1>Jogo da Forca - Futebol ⚽</h1>
+            <button id="iniciar-jogo-btn">Iniciar o jogo</button>
+        </div>
+        <div id="jogo-forca" style="display: none;">
+            
+            
+            <canvas id="forcaCanvas" width="400" height="400"></canvas>
+            <div id="palavra-exibida"></div>
+            <div id="dica-area">
+                <p id="dica-texto"></p>
+            </div>
+            <div id="letras-area">
+		<p id="categoria"></p> 
+		<p id="tentativas-restantes"></p>
+                <p id="letras-corretas"></p>
+                <p id="letras-incorretas"></p>
+            </div>
+            <div id="input-area">
+                <input type="text" id="palpite-input" maxlength="32">
+                <button id="palpite-button">Enviar Palpite</button>
+                <p id="mensagem-warn"></p>
+            </div>
+            <div id="score-area">
+                <p id="score-display"></p>
+            </div>
+	    <div id="palavras-usadas-area">
+                <p id="palavras-usadas-lista"></p>
+            </div>
+        </div>
+        <div id="menu-final" style="display: none;">
+        <h1><p id="mensagem-final-rodada"></p></h1>
+	    <div id="canvas-fim">
+		<canvas id="forcaCanvasFinal" width="400" height="400"></canvas>
+		<div id="palavra-exibida-final"></div>
+	   </div>
+	    <div id="stats-area">
+		<div id="lista-dicas-div">
+		</div>
+		 <div id="botao-game-choice">
+	   <div id="game-choice">
+                <h2>Deseja continuar jogando?</h2>
+                <button id="btn-sim">Sim</button>
+                <button id="btn-nao">Não</button>
+            </div>
+	    </div>
+		<p id="acertou-primeira"></p>
+        <p id="estatisticas-ultima-rodada"></p>
+	    </div>
+	  
+	    <p id="palavras-usadas-lista-final"></p>
+        </div>
+	<div id="end-game" style="display: none;">
+	    <p id="end-text"></p>
+	    <p id="end-stats"></p>
+        <p id="mensagem-end"></p>
+	    <button id="btn-goto-menu">Menu principal</button>
+	</div>
+    </div>
+    </div>
+
+    <script src="script.js"></script> </body>
+</html>
