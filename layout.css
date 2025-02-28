@@ -49,6 +49,25 @@ body {
     font-size: 1em;
 }
 
+#palavras-usadas-area {
+    text-align: center;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    max-width: 120hv;
+    max-height: 120hv;
+}
+
+#score-area {
+    text-align: center;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    max-width: 120hv;
+    max-height: 120hv;
+}
+
 #estatisticas-ultima-rodada {
     font-size: 1em;
     font-weight: bold;
@@ -156,18 +175,21 @@ canvas {
     font-weight: bold; /* Mensagens do jogo em negrito */
 }
 
-#score-area {
+#score-display {
     font-weight: bold;
     align-items: center;
     align-self: center;
     align-content: center;
+    justify-content: center;
     text-align: center;
 }
 
-#palavras-usadas-area {
+#palavras-usadas-lista {
     text-align: center; /* Alinha a lista de palavras usadas à esquerda */
     font-size: 0.9em;
     color: #555;
+    max-width: 120hv;
+    max-height: 120hv;
 }
 
 #palavras-usadas-lista-final {
