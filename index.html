@@ -9,7 +9,16 @@
         <h1><p id="numero-round"></p></h1>
         <div id="menu-inicial">
             <h1>Jogo da Forca - Futebol ⚽</h1>
+			<input type="text" id="nome-jogador-input" placeholder="Digite seu nome" style="margin-bottom: 10px;">
+			<input type="text" id="username-input" placeholder="Usuário" style="display: none;">
+			<input type="password" id="password-input" placeholder="Senha" style="display: none;">
+			<p id="error-display"></p>
+			<button id="login-btn" style="display: none;">Login</button>
             <button id="iniciar-jogo-btn">Iniciar o jogo</button>
+			<div id="ranking-div">
+				<h2>Ranking</h2>
+				<ol id="lista-ranking"></ol>
+			</div>
         </div>
         <div id="jogo-forca" style="display: none;">
             

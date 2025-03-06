@@ -4862,8 +4862,8 @@ const palavrasFutebol = [
 ];
 
 const maxRounds = 250;
-let deuBoasVindas = false;
 let palavrasUsadasText = [];
+let playerName = "";
 
 let jogo = {
 	numAcertos: 0,
@@ -4886,6 +4886,7 @@ let rodada = {
         scorePenalidadeErroAtual: 0,
 	scoreRodadaAtual: 0
 };
+
 
 // ---- Função que desenha forca na página
 function desenharForca(ctx, tentativasRestantes, larguraCanvas, alturaCanvas, roundAcabou) {
@@ -4984,6 +4985,7 @@ function desenharForca(ctx, tentativasRestantes, larguraCanvas, alturaCanvas, ro
             ctx.stroke();
 
             // Cabeça (modificada para derrota
+		ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(larguraCanvas / 2, 80, 20, 0, Math.PI * 2); // Circulo da cabeça
             ctx.stroke();
@@ -5039,6 +5041,7 @@ function desenharForca(ctx, tentativasRestantes, larguraCanvas, alturaCanvas, ro
             ctx.fillStyle = 'black'; // Restaura cor para preto
             ctx.font = '20px Arial';   // Restaura a fonte
             ctx.textAlign = 'left';     // Restaura alinhamento
+
         } 
         if (roundAcabou && tentativasRestantes != 0) {
             ctx.lineWidth = 10;
@@ -5087,10 +5090,16 @@ function capitalizeFirstLetterOfEachWord(str) {
 function jogarJogoForcaFutebol() {
 
 	const menuInicialDiv = document.getElementById('menu-inicial');
+	const rankingList = document.getElementById('lista-ranking');
+	const errorDisplay = document.getElementById('error-display');
 	const menuFinalDiv = document.getElementById('menu-final');
 	const menuEndGame = document.getElementById('end-game');
 	const jogoForcaDiv = document.getElementById('jogo-forca');
     const endButton = document.getElementById('btn-goto-menu');
+	const nomeJogadorInput = document.getElementById('nome-jogador-input');
+	const usernameInput = document.getElementById('username-input');
+	const passwordInput = document.getElementById('password-input');
+	const loginBtn = document.getElementById('login-btn');
 	const iniciarJogoBtn = document.getElementById('iniciar-jogo-btn');
     const mensagemWarn = document.getElementById('mensagem-warn');
     const palpiteButton = document.getElementById('palpite-button');
@@ -5128,7 +5137,19 @@ function jogarJogoForcaFutebol() {
 	let palavraObjeto;
 	let palavraDica;
 
-	// ----- Essa função checa as condições de ganhar/perder no round atual
+	/**
+	 * Verifica as condições de vitória ou derrota na rodada atual e atualiza o estado do jogo.
+	 *
+	 * A função 'verificarEstadoRodada()' realiza as seguintes ações:
+	 * - Verifica se a palavra foi completamente adivinhada.
+	 *   - Se for a primeira tentativa, incrementa o contador de acertos na primeira tentativa.
+	 *   - Incrementa o contador de acertos e o número da rodada.
+	 *   - Define que o jogador acertou e que a rodada acabou.
+	 * - Verifica se o jogador não tem mais tentativas restantes.
+	 *   - Incrementa o contador de erros e o número da rodada.
+	 *   - Define que a rodada acabou.
+	 * - Se a rodada acabou, chama a função `exibirGameChoice` para exibir a tela de escolha do jogo.
+	 */
 	function verificarEstadoRodada() {
 		console.log("verificarEstadoRodada() chamada. Rodada: ", jogo.numRound); // Debug
 		if (!palavraExibida.includes("_")) {
@@ -5167,7 +5188,20 @@ function jogarJogoForcaFutebol() {
 
 	}
 	
-
+	/**
+	 * Exibe a tela de escolha do jogo após o término de uma rodada.
+	 *
+	 * A função 'exibirGameChoice()' realiza várias ações para preparar a tela de escolha do jogo:
+	 * - Exibe e oculta elementos HTML relevantes.
+	 * - Reseta o valor do input de palpite.
+	 * - Capitaliza as palavras usadas.
+	 * - Atualiza o canvas e exibe a palavra final.
+	 * - Exibe dicas da palavra atual.
+	 * - Calcula e atualiza a pontuação da rodada e a pontuação global.
+	 * - Desenha a forca no canvas.
+	 * - Atualiza a mensagem de acerto na primeira tentativa.
+	 * - Exibe as estatísticas da última rodada.
+	 */
     function exibirGameChoice() {
         console.log("exibirGameChoice() chamada.")
         menuFinalDiv.style.display = 'block';
@@ -5218,6 +5252,17 @@ function jogarJogoForcaFutebol() {
 	    palavrasUsadasListaFinal.style.display = 'none';
     }
 
+	/**
+	 * Atualiza a mensagem exibida ao jogador com base no número de vidas restantes e se acertou na primeira tentativa.
+	 *
+	 * @param {HTMLElement} handler - Elemento HTML que exibirá a mensagem de erro.
+	 * @param {number} lives - Número de vidas restantes do jogador.
+	 * @param {boolean} first - Indica se o jogador acertou na primeira tentativa.
+	 *
+	 * A função 'messageHandler()' exibe uma mensagem de erro se o jogador não tiver mais vidas.
+	 * Se o jogador ainda tiver vidas e acertou na primeira tentativa, exibe uma mensagem de parabéns.
+	 * Caso contrário, oculta a mensagem de parabéns.
+	 */
     function messageHandler( handler, lives, first ) {
         console.log("messageHandler() chamada. Handler: ", handler," Lives: ", lives, " First: ", first);
         if( lives === 0 ) {
@@ -5233,6 +5278,23 @@ function jogarJogoForcaFutebol() {
         } 
     }
 
+	/**
+	 * Retorna um resumo das estatísticas da rodada atual do jogo.
+	 *
+	 * @param {number} tentativasRestantes - Número de tentativas restantes.
+	 * @param {boolean} acertouDePrimeira - Indica se o jogador acertou na primeira tentativa.
+	 * @param {object} rodada - Objeto contendo informações da rodada atual.
+	 * @param {object} pontos - Objeto contendo os pontos de diferentes ações no jogo.
+	 * @param {object} jogo - Objeto contendo informações gerais do jogo.
+	 * @returns {string} - Texto formatado com as estatísticas da rodada.
+	 *
+	 * A função 'getStats()' gera um texto que resume as estatísticas da rodada atual do jogo.
+	 * Se o jogador não tiver mais tentativas restantes, é exibido um ônus por morrer.
+	 * Caso contrário, se o jogador acertou na primeira tentativa, são exibidos os pontos de acerto e um bônus.
+	 * Se o jogador não acertou na primeira tentativa, são exibidos os pontos de acerto e, se aplicável, uma penalidade por erros.
+	 * Além disso, são exibidos bônus de eficiência e dificuldade da palavra, se aplicáveis.
+	 * Por fim, a pontuação da última rodada é sempre exibida.
+	 */
     function getStats(tentativasRestantes, acertouDePrimeira, rodada, pontos, jogo) {
         console.log("getStats() chamada. Tentativas: ", tentativasRestantes, " Primeira: ", acertouDePrimeira, " Rodada obj: ", rodada, "Pontos obj: ", pontos, "Jogo obj: ", jogo);
         let statsTextHandler = "";
@@ -5258,6 +5320,22 @@ function jogarJogoForcaFutebol() {
         return statsTextHandler;
     }
 
+	/**
+	 * Exibe o menu de fim de jogo, definindo e manipulando os elementos HTML do corpo.
+	 *
+	 * A função 'exibirEndGame()' realiza as seguintes ações:
+	 * - Oculta todos os menus e elementos de jogo ativos.
+	 * - Reseta o valor do input de palpite.
+	 * - Exibe o menu de fim de jogo.
+	 * - Atualiza os elementos HTML com as estatísticas finais do jogo, incluindo:
+	 *   - Número de rodadas jogadas.
+	 *   - Pontuação final.
+	 *   - Número de palavras acertadas.
+	 *   - Número de acertos na primeira tentativa.
+	 *   - Número de vezes que o jogador morreu.
+	 *   - Pontuação da última rodada.
+	 */
+
 	function exibirEndGame() {
 		console.log("exibirEndGame() chamada."); // Debug
 		menuFinalDiv.style.display = 'none';
@@ -5273,23 +5351,45 @@ function jogarJogoForcaFutebol() {
         const mensagemEnd = document.getElementById('mensagem-end');
         const endStats = document.getElementById('end-stats');
 
-        numRoundId.textContent = `📊 Estatísticas Finais`
+        numRoundId.textContent = `📊 Estatísticas Finais de ${playerName}`
         endText.textContent = `🔢 Você parou no Round ${jogo.numRound-1}!`
         endStats.textContent = `🏆 Sua pontuação final foi: ${jogo.scoreGlobal}`
         mensagemEnd.textContent = `🎯 Palavras acertadas: ${jogo.numAcertos} | ✨ Acertos de primeira: ${jogo.numAcertosPrimeira} | 💀 Vezes que morreu: ${jogo.numErros} | 💰 Pontuação da última rodada: ${jogo.scoreUltimaRodada}`
-
+		
+		addToRanking( playerName, jogo.scoreGlobal );
 	}
 
-    function irMenu() {
+	/**
+	 * Retorna ao menu principal.
+	 *
+	 * A função 'exibirMenuInicial()' realiza as seguintes ações:
+	 * - Oculta os menus e elementos de jogo ativos.
+	 * - Exibe o menu inicial.
+	 * - Reseta o valor do input de palpite.
+	 * - Exibe o ranking com a função exibirRanking() sendo chamada.
+	 */
+    function exibirMenuInicial() {
         menuFinalDiv.style.display = 'none';
         jogoForcaDiv.style.display = 'none';
         menuEndGame.style.display = 'none';
         menuInicialDiv.style.display = 'flex';
+		numRoundId.textContent = "";
         palpiteInput.value = null
-
-        //mainLogic();
+		nomeJogadorInput.value = null;
+		
+		exibirRanking();
     }
 
+	/**
+	 * Inicia o próximo round ao clicar no botão 'Sim' em game-choice.
+	 *
+	 * A função 'irProximoRound()' realiza as seguintes ações:
+	 * - Verifica se o round atual acabou. Se não, retorna sem fazer nada.
+	 * - Se o round acabou, oculta os menus e elementos de jogo ativos e exibe o jogo da forca.
+	 * - Reseta a lógica do round, exibe o estado do jogo e inicia a lógica principal do jogo.
+	 * - Verifica o estado do jogo para determinar se o jogo acabou.
+	 * - Se o jogo acabou, chama a função `irEndGame` para exibir o menu de fim de jogo.
+	 */
     function irProximoRound() {
         console.log("irProximoRound() chamada.")
         if ( !roundAcabou ) {
@@ -5311,6 +5411,14 @@ function jogarJogoForcaFutebol() {
 	    if ( jogoAcabou ) { console.log("verificandoEstadoRodada(). jogoAcabou: ", jogoAcabou, " então, exibirEndGame()."); irEndGame(); }
     }
 
+	/**
+	 * Finaliza o jogo ao clicar no botão 'Não' em game-choice.
+	 *
+	 * A função 'irEndGame()' realiza as seguintes ações:
+	 * - Verifica o estado do jogo.
+	 * - Se o jogo ainda não acabou, define que o jogo acabou.
+	 * - Exibe o menu de fim de jogo chamando a função `exibirEndGame`.
+	 */
     function irEndGame() {
         console.log("irEndGame() chamada.");
         verificarEstadoJogo();
@@ -5319,7 +5427,13 @@ function jogarJogoForcaFutebol() {
         exibirEndGame();
     }
 	
-	// ----- Essa função verifica o estado do jogo geral (não somente de um round)
+	/**
+	 * Verifica o estado geral do jogo para determinar se o jogo acabou.
+	 *
+	 * A função 'verificarEstadoJogo()' realiza as seguintes ações:
+	 * - Verifica se o número de rodadas jogadas é maior ou igual ao número máximo de rodadas permitidas.
+	 * - Define a variável `jogoAcabou` como `true` se o número máximo de rodadas foi alcançado, ou `false` caso contrário.
+	 */
 	function verificarEstadoJogo() {
 		if ( jogo.numRound >= maxRounds ) {
 			jogoAcabou = true;
@@ -5328,7 +5442,17 @@ function jogarJogoForcaFutebol() {
 		}
 	}
 
-	// ----- Essa função seleciona a palavra à ser descoberta, passando por um filtro que garante que não haja repetições
+	/**
+	 * Seleciona a palavra a ser descoberta, garantindo que não haja repetições.
+	 *
+	 * A função 'escolherPalavraSecreta()' realiza as seguintes ações:
+	 * - Verifica se todas as palavras já foram usadas. Se sim, retorna `null`.
+	 * - Caso contrário, seleciona uma palavra aleatória da lista `palavrasFutebol` que ainda não tenha sido usada.
+	 * - Garante que a palavra escolhida não esteja na lista de palavras já usadas (`palavrasUsadasText`).
+	 * - Retorna a palavra escolhida.
+	 *
+	 * @returns {object|null} - A palavra escolhida ou `null` se todas as palavras já foram usadas.
+	 */
 	function escolherPalavraSecreta() {
 		if ( palavrasUsadasText.length >= palavrasFutebol.length ) { // Não há mais palavras à serem usadas
 			return null;
@@ -5346,7 +5470,19 @@ function jogarJogoForcaFutebol() {
 		}
 	}
 
-	// ----- Função que retorna uma dica a partir dos parâmetros palavraHints (lista de dicas daquela palavra) e ultimaDicaExibida (controle anti-repetição)
+	/**
+	 * Retorna uma dica a partir dos parâmetros `palavraHints` (lista de dicas da palavra) e `ultimaDicaExibida` (controle anti-repetição).
+	 *
+	 * A função 'obterDica()' realiza as seguintes ações:
+	 * - Se `ultimaDicaExibida` for `null`, seleciona uma dica aleatória da lista `palavraHints`.
+	 * - Caso contrário, seleciona uma dica aleatória que não seja igual à última dica exibida.
+	 * - Limita o número de tentativas para evitar loops infinitos.
+	 * - Retorna a dica selecionada.
+	 *
+	 * @param {Array} palavraHints - Lista de dicas da palavra.
+	 * @param {string|null} ultimaDicaExibida - A última dica exibida, usada para evitar repetição.
+	 * @returns {string} - A dica selecionada.
+	 */
 	function obterDica( palavraHints, ultimaDicaExibida ) {
         console.log("obterDica() chamada.");
 		let dica;
@@ -5368,7 +5504,17 @@ function jogarJogoForcaFutebol() {
 			return dica;
 		}
 	}
-	// ----- Função que reseta as variáveis do jogo
+	
+	/**
+	 * Reseta as variáveis do jogo para seus valores iniciais.
+	 *
+	 * A função 'resetarLogicaJogo()' realiza as seguintes ações:
+	 * - Reseta todas as propriedades do objeto `jogo` para seus valores iniciais.
+	 *   - Define `numRound` como 1.
+	 *   - Define todas as outras propriedades como 0.
+	 * - Limpa a lista de palavras usadas (`palavrasUsadasText`).
+	 * - Chama a função `resetarLogicaRound` para resetar as variáveis do round atual.
+	 */
 	function resetarLogicaJogo() {
         console.log("resetar logica jogo")
 		Object.keys(jogo).forEach(key => {
@@ -5379,7 +5525,22 @@ function jogarJogoForcaFutebol() {
         console.log(jogo);
         resetarLogicaRound();
 	}
-	// ----- Função que reseta as variáveis da rodada no início de cada novo round
+	
+	/**
+	 * Reseta as variáveis da rodada no início de cada novo round.
+	 *
+	 * A função 'resetarLogicaRound()' realiza as seguintes ações:
+	 * - Define o número de tentativas restantes como 6.
+	 * - Limpa as listas de letras corretas e incorretas.
+	 * - Define que é a primeira tentativa e que o jogador não acertou de primeira.
+	 * - Define que a rodada e o jogo não acabaram.
+	 * - Seleciona uma nova palavra secreta e atualiza as variáveis relacionadas.
+	 * - Adiciona a palavra secreta à lista de palavras usadas.
+	 * - Inicializa a palavra exibida com underscores para cada letra.
+	 * - Define a categoria e as dicas da palavra.
+	 * - Obtém e define a primeira dica a ser exibida.
+	 * - Reseta as variáveis da rodada.
+	 */
 	function resetarLogicaRound() {
         console.log("resetarLogicaRound() chamada.");
 		tentativasRestantes = 6;
@@ -5401,7 +5562,26 @@ function jogarJogoForcaFutebol() {
 		Object.keys(rodada).forEach(key => { rodada[key] = 0; }); 
 	}
 	
-	// ------ Função que processa o palpite do usuário
+	/**
+	 * Processa o palpite do usuário, verificando se é uma letra ou uma palavra completa.
+	 *
+	 * A função 'processarPalpite()' realiza as seguintes ações:
+	 * - Verifica se o jogo acabou. Se sim, retorna sem fazer nada.
+	 * - Verifica se o palpite é válido (não nulo e não vazio).
+	 * - Se o palpite for uma letra:
+	 *   - Normaliza a letra para remover acentos e converte para maiúscula.
+	 *   - Verifica se a letra já foi tentada ou se é inválida.
+	 *   - Atualiza as listas de letras corretas ou incorretas e decrementa as tentativas restantes, se necessário.
+	 *   - Atualiza a palavra exibida com a letra correta, se encontrada.
+	 * - Se o palpite for uma palavra completa:
+	 *   - Normaliza a palavra para remover acentos e converte para maiúscula.
+	 *   - Verifica se a palavra está correta.
+	 *   - Atualiza a palavra exibida e define se o jogador acertou de primeira.
+	 *   - Atualiza as tentativas restantes e a lista de letras incorretas, se necessário.
+	 * - Obtém uma nova dica, verifica o estado da rodada e exibe o estado do jogo.
+	 *
+	 * @param {string} palpite - O palpite do usuário, que pode ser uma letra ou uma palavra completa.
+	 */
 	function processarPalpite( palpite ) {
 		console.log("processarPalpite() chamada."); // Debug
 		console.log("processarPalpite() - primeiraTentativa: ", primeiraTentativa, "acertouDePrimeira: ", acertouDePrimeira);
@@ -5488,7 +5668,20 @@ function jogarJogoForcaFutebol() {
 	}
 	
 
-	// ---- Calcular a dificuldade da palavra de acordo com: tamanho da palavra, número de repetições de letras, frequência de letras menos comuns na língua portuguesa;
+	/**
+	 * Calcula a dificuldade da palavra de acordo com seu tamanho, número de letras únicas e frequência de letras menos comuns na língua portuguesa.
+	 *
+	 * A função 'calcularDificuldadePalavra()' realiza as seguintes ações:
+	 * - Calcula o tamanho da palavra.
+	 * - Conta o número de letras únicas na palavra, ignorando espaços.
+	 * - Inicializa um bônus de dificuldade.
+	 * - Adiciona ao bônus de dificuldade com base no tamanho da palavra e no número de letras únicas.
+	 * - Adiciona ao bônus de dificuldade com base na frequência de letras menos comuns, conforme definido em `frequenciaLetrasBonus`.
+	 * - Retorna o valor total do bônus de dificuldade.
+	 *
+	 * @param {string} palavraSecreta - A palavra secreta cuja dificuldade será calculada.
+	 * @returns {number} - O valor do bônus de dificuldade calculado.
+	 */
 	function calcularDificuldadePalavra(palavraSecreta) {
         console.log("calcularDificuldadePalavra() chamada.");
 		const tamanhoPalavra = palavraSecreta.length;
@@ -5506,7 +5699,28 @@ function jogarJogoForcaFutebol() {
 		return bonusDificuldade;
 	}
 
-	// ---- Calcular a pontuação da rodada com base em: acerto de primeira tentativa, penalidade por letras incorretas, bônus de dificuldade da palavra;
+	/**
+	 * Calcula a pontuação da rodada com base em: acerto de primeira tentativa, penalidade por letras incorretas e bônus de dificuldade da palavra.
+	 *
+	 * A função 'calcularScore()' realiza as seguintes ações:
+	 * - Inicializa a pontuação da rodada como 0.
+	 * - Se o jogador acertou a palavra:
+	 *   - Adiciona pontos por acerto na primeira tentativa, se aplicável.
+	 *   - Adiciona pontos por acerto simples.
+	 *   - Calcula e adiciona um bônus de eficiência com base no número de letras corretas.
+	 *   - Calcula e adiciona um bônus de dificuldade da palavra.
+	 * - Se o jogador não acertou a palavra:
+	 *   - Adiciona uma penalidade por morte.
+	 * - Calcula e aplica uma penalidade por letras incorretas.
+	 * - Retorna a pontuação final da rodada.
+	 *
+	 * @param {string} palavraSecreta - A palavra secreta da rodada.
+	 * @param {Array} letrasCorretas - Lista de letras corretas adivinhadas.
+	 * @param {Array} letrasIncorretas - Lista de letras incorretas adivinhadas.
+	 * @param {boolean} acertouDePrimeira - Indica se o jogador acertou na primeira tentativa.
+	 * @param {boolean} jogadorAcertou - Indica se o jogador acertou a palavra.
+	 * @returns {number} - A pontuação final da rodada.
+	 */
 	function calcularScore( palavraSecreta, letrasCorretas, letrasIncorretas, acertouDePrimeira, jogadorAcertou ) {
 		console.log("calcularScore() chamada. palavraSecreta: ", palavraSecreta, " | letrasIncorretas: ", letrasIncorretas, " | letrasCorretas: ", letrasCorretas, " | acertouDePrimeira: ", acertouDePrimeira); // Debug
 		let score = 0;
@@ -5545,8 +5759,25 @@ function jogarJogoForcaFutebol() {
         return score;
 	}
 
+
+	/**
+	 * Exibe o estado do jogo no corpo HTML da página, mostrando os stats da partida e da rodada atual.
+	 *
+	 * A função 'exibirEstadoJogo()' realiza as seguintes ações:
+	 * - Oculta os elementos de exibição de pontuação e lista de palavras usadas.
+	 * - Se houver mais de uma palavra usada, exibe a lista de palavras usadas anteriormente.
+	 * - Atualiza os elementos HTML com as informações do jogo, incluindo:
+	 *   - Palavra exibida.
+	 *   - Dica da palavra.
+	 *   - Categoria da palavra.
+	 *   - Letras corretas e incorretas.
+	 *   - Número de vidas restantes.
+	 * - Se a rodada não acabou, exibe o número da rodada e a pontuação total.
+	 * - Se o número de rodadas for maior que 1, exibe as estatísticas da partida.
+	 * - Desenha a forca no canvas.
+	 */
 	function exibirEstadoJogo() {	
-		console.log("exibirEstadoJogo() chamada."); // Debug
+		console.log("exibirEstadoJogo() chamada. Jogador é: ", playerName); // Debug
         scoreDisplay.style.display = 'none';
         palavrasUsadasListaElement.style.display = 'none';
 	
@@ -5587,6 +5818,15 @@ function jogarJogoForcaFutebol() {
 	palavraDica = obterDica( palavraHints, null );
 	let ultimaDicaExibida = palavraDica;
 
+	/**
+	 * Define a lógica principal de uma partida.
+	 *
+	 * A função 'mainLogic()' realiza as seguintes ações:
+	 * - Verifica o estado geral do jogo para determinar se o jogo acabou.
+	 * - Verifica o estado da rodada atual para determinar se a rodada acabou.
+	 * - Se o jogo não acabou, continua a lógica da partida.
+	 * - Exibe o estado atual do jogo no corpo HTML da página.
+	 */
 	function mainLogic() {
 		console.log("mainLogic(). chamada."); // Debug
         console.log("jogo: ", jogo, "round: ", rodada)
@@ -5600,16 +5840,129 @@ function jogarJogoForcaFutebol() {
 
         exibirEstadoJogo();
 	}
+	
+	/**
+	 * Exibe o ranking dos jogadores na interface.
+	 * 
+	 * A função limpa a lista de ranking atual, carrega o ranking armazenado no localStorage,
+	 * ordena os jogadores por pontuação em ordem decrescente e exibe os 10 melhores jogadores.
+	 */
+	function exibirRanking() {
+		rankingList.innerHTML = null; // Limpa a lista de ranking
 
-	menuInicialDiv.style.display = 'flex';
-	jogoForcaDiv.style.display = 'none';
-	iniciarJogoBtn.addEventListener('click', () => {
-        menuInicialDiv.style.display = 'none';
-		jogoForcaDiv.style.display = 'block';
-        resetarLogicaJogo();
-		mainLogic();
+		// Carrega o ranking do localStorage (ou usa um ranking vazio se não houver)
+		let ranking = JSON.parse(localStorage.getItem('ranking')) || [];	
+
+		// Ordena o ranking por pontuação (decrescente)
+		ranking.sort((a, b) => b.score - a.score);
+		
+		// Adiciona os itens do ranking à lista (limite para os 10 primeiros)
+		for (let i = 0; i < ranking.length && i < 10; i++) {
+			const listItem = document.createElement('li');
+			listItem.textContent = `${ranking[i].name}: ${ranking[i].score}`;
+			rankingList.appendChild(listItem);
+		}
+	}
+	
+	/**
+	 * Adiciona ou atualiza a pontuação de um jogador no ranking.
+	 * 
+	 * A função carrega o ranking do localStorage, verifica se o jogador já existe no ranking
+	 * e atualiza sua pontuação se a nova pontuação for maior. Caso contrário, adiciona o jogador
+	 * ao ranking. Em seguida, ordena o ranking por pontuação em ordem decrescente e salva o ranking atualizado no localStorage.
+	 * @param {string} playerName - o nome do jogador da partida
+	 * @param {int} score - o score do jogador da partida
+	 */
+	function addToRanking(playerName, score) {
+		// Carregar o ranking existente do localStorage
+		let ranking = JSON.parse(localStorage.getItem('ranking')) || [];
+		
+		let jogadorExistente = ranking.find(jogador => jogador.name === playerName);
+		if ( jogadorExistente ) {
+			if ( score > jogadorExistente.score ) {
+				jogadorExistente.score = score;
+				console.log("Pontuação de ", playerName, "atualizada para: ", score);
+			} else {
+				console.log("Pontuação de ", playerName, "não foi atualizada, pois a nova pontuação é menor que a registrada anteriormente");
+			}
+		} else {
+			// Adicionar a nova pontuação do jogador ao ranking
+			ranking.push({ name: playerName, score: score });
+		}
+
+		// Ordenar a lista de ranking pela pontuação em ordem decrescente
+		ranking.sort((a, b) => b.score - a.score);
+
+		// Salvar a lista de ranking atualizada no localStorage
+		localStorage.setItem('ranking', JSON.stringify(ranking));
+	}
+	
+	function exportRankingToFile() {
+		const ranking = JSON.parse(localStorage.getItem('ranking')) || [];
+		const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(ranking, null, 4));
+		const downloadAnchorNode = document.createElement('a');
+		downloadAnchorNode.setAttribute("href", dataStr);
+		downloadAnchorNode.setAttribute("download", "ranking.json");
+		document.body.appendChild(downloadAnchorNode); // Requerido para o Firefox
+		downloadAnchorNode.click();
+		downloadAnchorNode.remove();
+	}
+	
+	function loginSystem() {
+		username = usernameInput.value;
+		password = passwordInput.value;
+		
+		loginBtn.addEventListener('click', function(event) {
+			event.preventDefault();
+			errorDisplay.textContent = '';
+			
+			if ( !username || !password ) {
+				errorDisplay.textContent = "Por favor, preencha todos os campos.";
+			}
+			
+			fetch('/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ username: username, password: password }),
+			})
+			.then(response => {
+				if ( !response.ok ) {
+					throw new Error('Falha na autenticação');
+				}
+				return response.json();
+			})
+			.then(data => {
+				console.log('Login bem sucedido: ', data);
+				if ( data.token ) {
+					localStorage.setItem('token', data.token);
+				}
+			})
+			.catch(error => {
+				console.error('Erro de login: ', error);
+				errorDisplay.textContent = 'Nome de usuário ou senha incorretos.';
+			});
+		});
+	}
+	
+	// ------ Listener pro click no botão 'Iniciar Jogo'
+	iniciarJogoBtn.addEventListener('pointerup', function(event) {
+		if ( event.pointerType === 'mouse') { console.log("clicou"); }
+		else if ( event.pointerType === 'touch') { console.log("tocou"); }
+		
+		if ( !nomeJogadorInput.value || nomeJogadorInput.value === " " ) {
+			errorDisplay.textContent = "Nome em branco. Por favor, insira um nome.";
+		} else {
+			playerName = nomeJogadorInput.value;
+			menuInicialDiv.style.display = 'none';
+			jogoForcaDiv.style.display = 'block';
+			resetarLogicaJogo();
+			mainLogic();
+		}
 	});
 
+	// ------- Listener pro click no botão 'Enviar palpite'
 	palpiteButton.addEventListener('click', function(event) {
         const palpite = palpiteInput.value;
         console.log("jogarJogoFutebolForca() - Botão 'Enviar Palpite' clicado.");
@@ -5623,6 +5976,7 @@ function jogarJogoForcaFutebol() {
         event.preventDefault();
     });
 
+    // ------ Listener pro keypress 'enter' para enviar palpite
     palpiteInput.addEventListener('keypress', function(event) {
         if ( event.keyCode === 13) {
         const palpite = palpiteInput.value;
@@ -5637,12 +5991,12 @@ function jogarJogoForcaFutebol() {
         }
 
     });
-
+	
 	continuarSim.addEventListener("click", irProximoRound);
     continuarNao.addEventListener("click", irEndGame);
-    endButton.addEventListener( "click", function(event) { 
-        console.log("clicou botao menu");
-        irMenu() });
+    endButton.addEventListener( "click", exibirMenuInicial);
+	
+	exibirMenuInicial(); // Chamar exibirMenuInicial()
 }
 
 jogarJogoForcaFutebol();
